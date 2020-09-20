@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">RapidAPI_Weather</string>
+    <string name="select_your_country">Select Country</string>
+    <string name="selected_country">Selected Country</string>
+    <string name="latest_update">Latest Update</string>
+    <string name="confirmed_cases">Confirmed Cases</string>
+    <string name="active_cases">Active Cases</string>
+    <string name="recovered_cases">Recovered Cases</string>
+    <string name="death_count">Death Count</string>
 </resources>
