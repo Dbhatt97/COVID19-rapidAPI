@@ -1,46 +1,43 @@
 package com.example.rapidapi_weather;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.android.volley.RequestQueue;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.nio.channels.AsynchronousChannelGroup;
 import java.util.ArrayList;
-import java.util.Objects;
-import java.util.jar.JarOutputStream;
-
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
-   public TextView show,Confirm_case,Active_case,Death_case,Recovered_case;
+   public static TextView show,Confirm_case,Active_case,Death_case,Recovered_case;
     String name;
+    Double lat;
     public  Spinner spinner;
     String responseStr;
     ArrayList<String> countrylist;
@@ -48,39 +45,56 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        show = (TextView) findViewById(R.id.tv);
-        Confirm_case=(TextView)findViewById(R.id.Description_Confirm);
-        Active_case=(TextView)findViewById(R.id.Description_active);
-        Death_case=(TextView)findViewById(R.id.Description_Death);
-        Recovered_case=(TextView)findViewById(R.id.Description_Recovered);
 
-        mqueue = Volley.newRequestQueue(MainActivity.this);
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_main);
+            show = (TextView) findViewById(R.id.tv);
+            Confirm_case=(TextView)findViewById(R.id.Description_Confirm);
+            Active_case=(TextView)findViewById(R.id.Description_active);
+            Death_case=(TextView)findViewById(R.id.Description_Death);
+            Recovered_case=(TextView)findViewById(R.id.Description_Recovered);
 
-        spinner = findViewById(R.id.countrylist);
-        countrylist = new ArrayList<>();
+            mqueue = Volley.newRequestQueue(MainActivity.this);
+
+            spinner = findViewById(R.id.countrylist);
+            countrylist = new ArrayList<>();
 
 
-        new getdata().execute();
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                ((TextView) parent.getChildAt(0)).setTextColor(Color.WHITE);
-                String country=   spinner.getItemAtPosition(spinner.getSelectedItemPosition()).toString();
-                Toast.makeText(MainActivity.this,country,Toast.LENGTH_LONG).show();
-                show.setText(country);
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
 
-            }
-        });
+
+            new getdata().execute();
+            new LatestNews().execute();
+
+            ///DropDown Menu on top
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    ((TextView) parent.getChildAt(0)).setTextColor(Color.WHITE);
+                    String country=   spinner.getItemAtPosition(spinner.getSelectedItemPosition()).toString();
+                    show.setText(country);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+
+        SupportMapFragment mapFragment = SupportMapFragment.newInstance();
+        FragmentTransaction fragmentTransaction =
+                getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.map, mapFragment);
+        fragmentTransaction.commit();
+
+
         }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
 
-
+    }
 
 
     private class getdata extends AsyncTask<String, Void, String> {
@@ -127,11 +141,15 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     name = (String) jo.get("name");
                     countrylist.add(name);
+
+                    lat = jo.isNull("latitude") ? null : jo.getDouble("latitude");
+
                 }
                 catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
+           // Toast.makeText(MainActivity.this,String.valueOf(lat),Toast.LENGTH_LONG).show();
             spinner.setAdapter(new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_spinner_dropdown_item,countrylist));
 
             super.onPostExecute(avoid);
