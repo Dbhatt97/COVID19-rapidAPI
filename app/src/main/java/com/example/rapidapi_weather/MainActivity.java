@@ -1,6 +1,7 @@
 package com.example.rapidapi_weather;
 
 import android.graphics.Color;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -18,9 +19,13 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,11 +42,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
    public static TextView show,Confirm_case,Active_case,Death_case,Recovered_case;
     String name;
-    Double lat;
+    Double lat,lon;
     public  Spinner spinner;
     String responseStr;
     ArrayList<String> countrylist;
     private RequestQueue mqueue;
+    private GoogleMap mMap;
+    SupportMapFragment mapFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,17 +90,33 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             });
 
 
-        SupportMapFragment mapFragment = SupportMapFragment.newInstance();
-        FragmentTransaction fragmentTransaction =
-                getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.map, mapFragment);
-        fragmentTransaction.commit();
+         mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
 
         }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        float zoom = 5.0f;
+        mMap = googleMap;
+        // Add a marker in Sydney and move the camera
+        if(lat==null && lon==null) {
+            Location location = null;
+            Double latti = location.getLatitude();
+            Double longii = location.getLongitude();
+            LatLng selected_country = new LatLng(latti, longii);
+            mMap.addMarker(new
+                    MarkerOptions().position(selected_country).title("Your Area"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selected_country,zoom));
+
+        }
+        else {
+            Toast.makeText(MainActivity.this,"poop",Toast.LENGTH_LONG).show();
+
+        }
+
 
     }
 
@@ -143,7 +167,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     countrylist.add(name);
 
                     lat = jo.isNull("latitude") ? null : jo.getDouble("latitude");
-
+                    lon = jo.isNull("longitude") ? null : jo.getDouble("longitude");
                 }
                 catch (JSONException e) {
                     e.printStackTrace();
